@@ -6,15 +6,15 @@ A method for recording control flow transfer history is valuable not only for pe
 
 Control flow trace capabilities offer very deep transfer history, but the volume of data produced can result in significant performance overheads due to memory bandwidth consumption, buffer management, and decoder overhead. The Control Transfer Records (CTR) extension provides a method to record a limited history in register-accessible internal chip storage, with the intent of dramatically reducing the performance overhead and complexity of collecting transfer history.
 
-CTR defines a circular (FIFO) buffer.  Each buffer entry holds a record for a single recorded control flow transfer.  The number of records that can be held in the buffer depends upon both the implementation (the maximum supported depth) and the CTR configuration (the software selected depth).
+[#norm:Smctr:CTR_buffer]#CTR defines a circular (FIFO) buffer.  Each buffer entry holds a record for a single recorded control flow transfer.#  The number of records that can be held in the buffer depends upon both the implementation (the maximum supported depth) and the CTR configuration (the software selected depth).
 
-Only qualified transfers are recorded.  Qualified transfers are those that meet the filtering criteria, which include the privilege mode and the transfer type.
+[#norm:Smctr:recording_criteria]#Only qualified transfers are recorded.  Qualified transfers are those that meet the filtering criteria, which include the privilege mode and the transfer type.#
 
-Recorded transfers are inserted at the write pointer, which is then incremented, while older recorded transfers may be overwritten once the buffer is full. Or the user can enable RAS (Return Address Stack) emulation mode, where only function calls are recorded, and function returns pop the last call record.  The source PC, target PC, and some optional metadata (transfer type, elapsed cycles) are stored for each recorded transfer.
+[#norm:Smctr:transfer_steps]#Recorded transfers are inserted at the write pointer, which is then incremented, while older recorded transfers may be overwritten once the buffer is full. Or the user can enable RAS (Return Address Stack) emulation mode, where only function calls are recorded, and function returns pop the last call record.  The source PC, target PC, and some optional metadata (transfer type, elapsed cycles) are stored for each recorded transfer.#
 
-The CTR buffer is accessible through an indirect CSR interface, such that software can specify which logical entry in the buffer it wishes to read or write.  Logical entry 0 always corresponds to the youngest recorded transfer, followed by entry 1 as the next youngest, and so on.
+[#norm:Smctr:CTR_CSR_interface]#The CTR buffer is accessible through an indirect CSR interface, such that software can specify which logical entry in the buffer it wishes to read or write.  Logical entry 0 always corresponds to the youngest recorded transfer, followed by entry 1 as the next youngest, and so on.#
 
-The machine-level extension, *Smctr*, encompasses all newly added Control Status Registers (CSRs), instructions, and behavior modifications for a hart across all privilege levels.  The corresponding supervisor-level extension, *Ssctr*, is essentially identical to Smctr, except that it excludes machine-level CSRs and behaviors not intended to be directly accessible at the supervisor level.
+[#norm:Smctr:scope]#The machine-level extension, *Smctr*, encompasses all newly added Control Status Registers (CSRs), instructions, and behavior modifications for a hart across all privilege levels.#  [#norm:Ssctr:transfer_steps]#The corresponding supervisor-level extension, *Ssctr*, is essentially identical to Smctr, except that it excludes machine-level CSRs and behaviors not intended to be directly accessible at the supervisor level.#
 
 Smctr and Ssctr depend on both the implementation of S-mode and the Sscsrind extension.
 
@@ -22,7 +22,7 @@ Smctr and Ssctr depend on both the implementation of S-mode and the Sscsrind ext
 
 ==== Machine Control Transfer Records Control Register (`mctrctl`)
 
-The `mctrctl` register is a 64-bit read/write register that enables and configures the CTR capability.
+[#norm:Ssctr:mctrctl-sz_acc_op]#The `mctrctl` register is a 64-bit read/write register that enables and configures the CTR capability.#
 
 .Machine Control Transfer Records Control Register Format
 [%unbreakable]
@@ -116,13 +116,13 @@ _Because the ROI of CTR is perceived to be low for RV32 implementations, CTR doe
 
 ==== Supervisor Control Transfer Records Control Register (`sctrctl`)
 
-The `sctrctl` register provides supervisor mode access to a subset of `mctrctl`.
+[#norm:Ssctr:sctrctl_op]#The `sctrctl` register provides supervisor mode access to a subset of `mctrctl`.#
 
-Bits 2 and 9 in `sctrctl` are read-only 0. As a result, the M and MTE fields in `mctrctl` are not accessible through `sctrctl`.  All other `mctrctl` fields are accessible through `sctrctl`.
+[#norm:Ssctr:sctrctl_acc]#Bits 2 and 9 in `sctrctl` are read-only 0. As a result, the M and MTE fields in `mctrctl` are not accessible through `sctrctl`.  All other `mctrctl` fields are accessible through `sctrctl`.#
 
 ==== Virtual Supervisor Control Transfer Records Control Register (`vsctrctl`)
 
-If the H extension is implemented, the `vsctrctl` register is a 64-bit read/write register that is VS-mode's version of supervisor register `sctrctl`.  When V=1, `vsctrctl` substitutes for the usual `sctrctl`, so instructions that normally read or modify `sctrctl` actually access `vsctrctl` instead.
+[#norm:Ssctr:vsctrctl_sz_acc_op]#If the H extension is implemented, the `vsctrctl` register is a 64-bit read/write register that is VS-mode's version of supervisor register `sctrctl`.  When V=1, `vsctrctl` substitutes for the usual `sctrctl`, so instructions that normally read or modify `sctrctl` actually access `vsctrctl` instead.#
 
 .Virtual Supervisor Control Transfer Records Control Register Format
 [%unbreakable]
@@ -178,7 +178,7 @@ _Unlike the CTR status register or the CTR entry registers, the CTR control regi
 
 ==== Supervisor Control Transfer Records Depth Register (`sctrdepth`)
 
-The 32-bit `sctrdepth` register specifies the depth of the CTR buffer.
+[#norm:Ssctr:sctrdepth_sz_op]#The 32-bit `sctrdepth` register specifies the depth of the CTR buffer.
 
 .Supervisor Control Transfer Records Depth Register Format
 [%unbreakable]
@@ -214,7 +214,7 @@ The depth of the CTR buffer dictates the number of entries to which the hardware
 It is implementation-specific which DEPTH value(s) are supported.
 |===
 
-Attempts to access `sctrdepth` from VS-mode or VU-mode raise a virtual-instruction exception, unless CTR state enable access restrictions apply.  See <<State Enable Access Control>>.
+[#norm:Ssctr:sctrdepth_mode]#Attempts to access `sctrdepth` from VS-mode or VU-mode raise a virtual-instruction exception, unless CTR state enable access restrictions apply.#  See <<State Enable Access Control>>.
 
 [NOTE]
 [%unbreakable]
@@ -228,7 +228,7 @@ _The value in configurable depth lies in supporting VM migration.  It is expecte
 
 ==== Supervisor Control Transfer Records Status Register (`sctrstatus`)
 
-The 32-bit `sctrstatus` register grants access to CTR status information and is updated by the hardware whenever CTR is active.  CTR is active when the current privilege mode is enabled for recording and CTR is not frozen.
+[#norm:Ssctr:sctrstatus_sz_op_mode]#The 32-bit `sctrstatus` register grants access to CTR status information and is updated by the hardware whenever CTR is active.  CTR is active when the current privilege mode is enabled for recording and CTR is not frozen.#
 
 .Supervisor Control Transfer Records Status Register Format
 [%unbreakable]
@@ -250,8 +250,8 @@ The 32-bit `sctrstatus` register grants access to CTR status information and is 
 |FROZEN |Inhibit transfer recording. See <<Freeze>>.
 |===
 
-Undefined bits in `sctrstatus` are WPRI. Status fields may be added by future extensions,
-and software should ignore but preserve any fields that it does not recognize.  Undefined  bits must be implemented as read-only 0, unless a custom extension is implemented and enabled (see <<Custom Extensions>>).
+[#norm:Ssctr:sctrstatus_acc]#Undefined bits in `sctrstatus` are WPRI. Status fields may be added by future extensions,
+and software should ignore but preserve any fields that it does not recognize.  Undefined  bits must be implemented as read-only 0, unless a custom extension is implemented and enabled# (see <<Custom Extensions>>).
 
 [NOTE]
 [%unbreakable]
@@ -282,17 +282,17 @@ _Smctr/Ssctr depends upon implementation of S-mode because much of CTR state is 
 
 === Entry Registers
 
-Control transfer records are stored in a CTR buffer, such that each buffer entry stores information about a single transfer.  The CTR buffer entries are logically accessed via the indirect register access mechanism defined by the Sscsrind extension. The `siselect` index range 0x200 through 0x2FF is reserved for CTR logical entries 0 through 255. When `siselect` holds a value in this range, `sireg` provides access to `ctrsource`, `sireg2` provides access to `ctrtarget`, and `sireg3` provides access to `ctrdata`.  `sireg4`, `sireg5`, and `sireg6` are read-only 0.
+Control transfer records are stored in a CTR buffer, such that each buffer entry stores information about a single transfer.  The CTR buffer entries are logically accessed via the indirect register access mechanism defined by the Sscsrind extension. [#norm:Ssctr:siselect_acc_op]#The `siselect` index range 0x200 through 0x2FF is reserved for CTR logical entries 0 through 255. When `siselect` holds a value in this range, `sireg` provides access to `ctrsource`, `sireg2` provides access to `ctrtarget`, and `sireg3` provides access to `ctrdata`.  `sireg4`, `sireg5`, and `sireg6` are read-only 0.#
 
-When `vsiselect` holds a value in 0x200..0x2FF, the `vsireg*` registers provide access to the same CTR entry register state as the analogous `sireg*` registers.  There is not a separate set of entry registers for V=1.
+[#norm:Ssctr:vsiselect_op]#When `vsiselect` holds a value in 0x200..0x2FF, the `vsireg*` registers provide access to the same CTR entry register state as the analogous `sireg*` registers.  There is not a separate set of entry registers for V=1.#
 
 See <<State Enable Access Control>> for cases where CTR accesses from S-mode and VS-mode may be restricted.
 
 ==== Control Transfer Record Source Register (`ctrsource`)
 
-The `ctrsource` register contains the source program counter, which is the `pc` of the recorded control transfer instruction, or the epc of the recorded trap.  The valid (V) bit is set by the hardware when a transfer is recorded in the selected CTR buffer entry, and implies that data in `ctrsource`, `ctrtarget`, and `ctrdata` is valid for this entry.
+[#norm:Ssctr:ctrsource_op]#The `ctrsource` register contains the source program counter, which is the `pc` of the recorded control transfer instruction, or the epc of the recorded trap.#  [#norm:Ssctr:ctrsource_ctrtartget_ctrdata_Vbit]#The valid (V) bit is set by the hardware when a transfer is recorded in the selected CTR buffer entry, and implies that data in `ctrsource`, `ctrtarget`, and `ctrdata` is valid for this entry.#
 
-`ctrsource` is an MXLEN-bit WARL register that must be able to hold all valid virtual or physical addresses that can serve as a `pc`. It need not be able to hold any invalid addresses; implementations may convert an invalid address into a valid address that the register is capable of holding.  When XLEN < MXLEN, both explicit writes (by software) and implicit writes (for recorded transfers) will be zero-extended.
+[#norm:Ssctr:ctrsource_sz_acc_op]#`ctrsource` is an MXLEN-bit WARL register that must be able to hold all valid virtual or physical addresses that can serve as a `pc`. It need not be able to hold any invalid addresses; implementations may convert an invalid address into a valid address that the register is capable of holding.  When XLEN < MXLEN, both explicit writes (by software) and implicit writes (for recorded transfers) will be zero-extended.#
 
 .Control Transfer Record Source Register Format for MXLEN=64
 [%unbreakable]
