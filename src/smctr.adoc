@@ -14,15 +14,15 @@ CTR defines a circular (FIFO) buffer.  Each buffer entry holds a record for a si
 
 [#norm:Smctr_CTR_CSR_interface]#The CTR buffer is accessible through an indirect CSR interface, such that software can specify which logical entry in the buffer it wishes to read or write.  Logical entry 0 always corresponds to the youngest recorded transfer, followed by entry 1 as the next youngest, and so on.#
 
-[#norm:Smctr_scope]#The machine-level extension, *Smctr*, encompasses all newly added Control Status Registers (CSRs), instructions, and behavior modifications for a hart across all privilege levels.#  [#norm:Ssctr:transfer_steps]#The corresponding supervisor-level extension, *Ssctr*, is essentially identical to Smctr, except that it excludes machine-level CSRs and behaviors not intended to be directly accessible at the supervisor level.#
+[#norm:Smctr_scope]#The machine-level extension, *Smctr*, encompasses all newly added Control Status Registers (CSRs), instructions, and behavior modifications for a hart across all privilege levels.#  [#norm:Ssctr_transfer_steps]#The corresponding supervisor-level extension, *Ssctr*, is essentially identical to Smctr, except that it excludes machine-level CSRs and behaviors not intended to be directly accessible at the supervisor level.#
 
-Smctr and Ssctr depend on both the implementation of S-mode and the Sscsrind extension.
+[#norm:Smctr_Ssctr_depend]#Smctr and Ssctr depend on both the implementation of S-mode and the Sscsrind extension.#
 
 === CSRs
 
 ==== Machine Control Transfer Records Control Register (`mctrctl`)
 
-[#norm:Ssctr:mctrctl-sz_acc_op]#The `mctrctl` register is a 64-bit read/write register that enables and configures the CTR capability.#
+[#norm:Ssctr_mctrctl-sz_acc_op]#The `mctrctl` register is a 64-bit read/write register that enables and configures the CTR capability.#
 
 .Machine Control Transfer Records Control Register Format
 [%unbreakable]
@@ -116,13 +116,13 @@ _Because the ROI of CTR is perceived to be low for RV32 implementations, CTR doe
 
 ==== Supervisor Control Transfer Records Control Register (`sctrctl`)
 
-[#norm:Ssctr:sctrctl_op]#The `sctrctl` register provides supervisor mode access to a subset of `mctrctl`.#
+[#norm:Ssctr_sctrctl_op]#The `sctrctl` register provides supervisor mode access to a subset of `mctrctl`.#
 
-[#norm:Ssctr:sctrctl_acc]#Bits 2 and 9 in `sctrctl` are read-only 0. As a result, the M and MTE fields in `mctrctl` are not accessible through `sctrctl`.  All other `mctrctl` fields are accessible through `sctrctl`.#
+[#norm:Ssctr_sctrctl_acc]#Bits 2 and 9 in `sctrctl` are read-only 0. As a result, the M and MTE fields in `mctrctl` are not accessible through `sctrctl`.  All other `mctrctl` fields are accessible through `sctrctl`.#
 
 ==== Virtual Supervisor Control Transfer Records Control Register (`vsctrctl`)
 
-[#norm:Ssctr:vsctrctl_sz_acc_op]#If the H extension is implemented, the `vsctrctl` register is a 64-bit read/write register that is VS-mode's version of supervisor register `sctrctl`.  When V=1, `vsctrctl` substitutes for the usual `sctrctl`, so instructions that normally read or modify `sctrctl` actually access `vsctrctl` instead.#
+[#norm:Ssctr_vsctrctl_sz_acc_op]#If the H extension is implemented, the `vsctrctl` register is a 64-bit read/write register that is VS-mode's version of supervisor register `sctrctl`.  When V=1, `vsctrctl` substitutes for the usual `sctrctl`, so instructions that normally read or modify `sctrctl` actually access `vsctrctl` instead.#
 
 .Virtual Supervisor Control Transfer Records Control Register Format
 [%unbreakable]
@@ -196,7 +196,7 @@ The 32-bit `sctrdepth` register specifies the depth of the CTR buffer.
 [width="100%",cols="15%,85%",options="header",]
 |===
 |Field |Description
-|DEPTH |[#norm:sctrdepth-depth]#WARL field that selects the depth of the CTR buffer.# Encodings:
+|DEPTH |[#norm:sctrdepth-depth_op0]#WARL field that selects the depth of the CTR buffer.# Encodings:
 
 ‘000 - 16
 
@@ -210,9 +210,9 @@ The 32-bit `sctrdepth` register specifies the depth of the CTR buffer.
 
 '11x - reserved
 
-The depth of the CTR buffer dictates the number of entries to which the hardware records transfers. For a depth of N, the hardware records transfers to entries 0..N-1. All <<_entry_registers, Entry Registers>> read as '0' and are read-only when the selected entry is in the range N to 255.  When the depth is increased, the newly accessible entries contain unspecified but legal values.
+[#norm:sctrdepth-depth_op1]#The depth of the CTR buffer dictates the number of entries to which the hardware records transfers. For a depth of N, the hardware records transfers to entries 0..N-1. All <<_entry_registers, Entry Registers>> read as '0' and are read-only when the selected entry is in the range N to 255.  When the depth is increased, the newly accessible entries contain unspecified but legal values.#
 
-It is implementation-specific which DEPTH value(s) are supported.
+[#norm:sctrdepth-depth_param]#It is implementation-specific which DEPTH value(s) are supported.#
 |===
 
 [#norm:sctrdepth_mode]#Attempts to access `sctrdepth` from VS-mode or VU-mode raise a virtual-instruction exception, unless CTR state enable access restrictions apply.#  See <<State Enable Access Control>>.
@@ -248,10 +248,10 @@ _The value in configurable depth lies in supporting VM migration.  It is expecte
 |===
 |Field |Description
 |WRPTR |[#norm:sctrstatus-wrptr]#WARL field that indicates the physical CTR buffer entry to be written next.  It is incremented after new transfers are recorded (see <<Behavior>>), though there are exceptions when `__x__ctrctl`.RASEMU=1, see <<RAS (Return Address Stack) Emulation Mode>>.  For a given CTR depth (where depth = 2^(DEPTH+4)^), WRPTR wraps to 0 on an increment when the value matches depth-1, and to depth-1 on a decrement when the value is 0.  Bits above those needed to represent depth-1 (e.g., bits 7:4 for a depth of 16) are read-only 0. On depth changes, WRPTR holds an unspecified but legal value.#
-|FROZEN |[#norm:sctrstatus-frozen_op]#Inhibit transfer recording. See <<Freeze>>.#
+|FROZEN |[#norm:sctrstatus-frozen_op]#Inhibit transfer recording.# See <<Freeze>>.
 |===
 
-[#norm:Ssctr:sctrstatus_acc]#Undefined bits in `sctrstatus` are WPRI. Status fields may be added by future extensions,
+[#norm:Ssctr_sctrstatus_acc]#Undefined bits in `sctrstatus` are WPRI. Status fields may be added by future extensions,
 and software should ignore but preserve any fields that it does not recognize.  Undefined  bits must be implemented as read-only 0, unless a custom extension is implemented and enabled# (see <<Custom Extensions>>).
 
 [NOTE]
@@ -293,7 +293,7 @@ See <<State Enable Access Control>> for cases where CTR accesses from S-mode and
 
 [#norm:ctrsource_op]#The `ctrsource` register contains the source program counter, which is the `pc` of the recorded control transfer instruction, or the epc of the recorded trap.#  [#norm:ctrsource_ctrtartget_ctrdata_Vbit]#The valid (V) bit is set by the hardware when a transfer is recorded in the selected CTR buffer entry, and implies that data in `ctrsource`, `ctrtarget`, and `ctrdata` is valid for this entry.#
 
-[#norm:Ssctr:ctrsource_sz_acc_op]#`ctrsource` is an MXLEN-bit WARL register that must be able to hold all valid virtual or physical addresses that can serve as a `pc`. It need not be able to hold any invalid addresses; implementations may convert an invalid address into a valid address that the register is capable of holding.  When XLEN < MXLEN, both explicit writes (by software) and implicit writes (for recorded transfers) will be zero-extended.#
+[#norm:Ssctr_ctrsource_sz_acc_op]#`ctrsource` is an MXLEN-bit WARL register that must be able to hold all valid virtual or physical addresses that can serve as a `pc`. It need not be able to hold any invalid addresses; implementations may convert an invalid address into a valid address that the register is capable of holding.  When XLEN < MXLEN, both explicit writes (by software) and implicit writes (for recorded transfers) will be zero-extended.#
 
 .Control Transfer Record Source Register Format for MXLEN=64
 [%unbreakable]
@@ -392,7 +392,7 @@ _Like the <<_transfer_type_filtering, Transfer Type Filtering>> bits in `mctrctl
 The SCTRCLR instruction performs the following operations:
 
 * [#norm:sctrclr_op1]#Zeroes all  CTR <<_entry_registers, Entry Registers>>, for all DEPTH values#
-* [#norm:sctrclr_op2]#Zeroes the CTR cycle counter and CCV (see <<Cycle Counting>>)#
+* [#norm:sctrclr_op2]#Zeroes the CTR cycle counter and CCV# (see <<Cycle Counting>>)
 
 [#norm:sctrclr_acc]#Any read of `ctrsource`, `ctrtarget`, or `ctrdata` that follows SCTRCLR, such that it precedes the next qualified control transfer, will return the value 0.  Further, the first recorded transfer following SCTRCLR will have `ctrdata`.CCV=0.#
 
@@ -441,7 +441,7 @@ _Implementations that support Smctr/Ssctr but not Smstateen/Ssstateen may observ
 * [#norm:ctr_behavior_criteria2]#`sctrstatus`.FROZEN is not set#
 * [#norm:ctr_behavior_criteria3]#The transfer completes/retires#
 
-Such qualified transfers update the <<_entry_registers, Entry Registers>> at logical entry 0.  As a result, older entries are pushed down the stack; the record previously in logical entry 0 moves to logical entry 1, the record in logical entry 1 moves to logical entry 2, and so on.  If the CTR buffer is full, the oldest recorded entry (previously at entry depth-1) is lost.
+[#norm:ctr_stack]#Such qualified transfers update the <<_entry_registers, Entry Registers>> at logical entry 0.  As a result, older entries are pushed down the stack; the record previously in logical entry 0 moves to logical entry 1, the record in logical entry 1 moves to logical entry 2, and so on.  If the CTR buffer is full, the oldest recorded entry (previously at entry depth-1) is lost.#
 
 [#norm:ctr_validbit]#Recorded transfers will set the `ctrsource`.V bit to 1, and will update all implemented record fields.#
 
@@ -581,8 +581,8 @@ _Here "indirect" is used interchangeably with "uninferrable", which is used in t
 | 3 | [#norm:ttype3]#Trap return#
 | 4 | [#norm:ttype4]#Not-taken branch#
 | 5 | [#norm:ttype5]#Taken branch#
-| 6 | [#norm:ttype6]#_reserved_#
-| 7 | [#norm:ttype7]#_reserved_#
+| 6 | _reserved_
+| 7 | _reserved_
 | 8 | [#norm:ttype8]#Indirect call#
 | 9 | [#norm:ttype9]#Direct call#
 | 10 | [#norm:ttype10]#Indirect jump (without linkage)#
@@ -631,9 +631,9 @@ _If implementation of any transfer type filter bit results in reduced software p
 
 ==== Cycle Counting
 
-The `ctrdata` register may optionally include a count of CPU cycles elapsed since the prior CTR record.  The elapsed cycle count value is represented by the CC field, which has a 12-bit mantissa component (Cycle Count Mantissa, or CCM) and a 4-bit exponent component (Cycle Count Exponent, or CCE).
+[#norm:ctrdata_cc_supported_param]#The `ctrdata` register may optionally include a count of CPU cycles elapsed since the prior CTR record.  The elapsed cycle count value is represented by the CC field, which has a 12-bit mantissa component (Cycle Count Mantissa, or CCM) and a 4-bit exponent component (Cycle Count Exponent, or CCE).#
 
-[#norm:ccounter_inc]#he elapsed cycle counter (CtrCycleCounter) increments at the same rate as the `mcycle` counter.  Only cycles while CTR is active are counted, where active implies that the current privilege mode is enabled for recording and CTR is not frozen.  The CC field is encoded such that CCE holds 0 if the CtrCycleCounter value is less than 4096, otherwise it holds the index of the most significant one bit in the CtrCycleCounter value, minus 11.  CCM holds CtrCycleCounter bits CCE+10:CCE-1.#
+[#norm:ccounter_inc]#The elapsed cycle counter (CtrCycleCounter) increments at the same rate as the `mcycle` counter.  Only cycles while CTR is active are counted, where active implies that the current privilege mode is enabled for recording and CTR is not frozen.  The CC field is encoded such that CCE holds 0 if the CtrCycleCounter value is less than 4096, otherwise it holds the index of the most significant one bit in the CtrCycleCounter value, minus 11.  CCM holds CtrCycleCounter bits CCE+10:CCE-1.#
 
 The elapsed cycle count can then be calculated by software using the following formula:
 
