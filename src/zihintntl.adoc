@@ -8,23 +8,23 @@ instructions do not change architectural state, nor do they alter the
 architecturally visible effects of the target instruction. Four variants
 are provided:
 
-[#norm:NTL.P1_op]#The NTL.P1 instruction indicates that the target instruction does not
+[#norm:NTL-P1_op]#The NTL.P1 instruction indicates that the target instruction does not
 exhibit temporal locality within the capacity of the innermost level of
-private cache in the memory hierarchy.# [#norm:NTL.P1_en]#NTL.P1 is encoded as
+private cache in the memory hierarchy.# [#norm:NTL-P1_enc]#NTL.P1 is encoded as
 ADD _x0, x0, x2_.#
 
-[#norm:NTL.PALL_op]#The NTL.PALL instruction indicates that the target instruction does not
+[#norm:NTL-PALL_op]#The NTL.PALL instruction indicates that the target instruction does not
 exhibit temporal locality within the capacity of any level of private
-cache in the memory hierarchy.# [#norm:NTL.PALL_en]#NTL.PALL is encoded as ADD _x0, x0, x3_.#
+cache in the memory hierarchy.# [#norm:NTL-PALL_enc]#NTL.PALL is encoded as ADD _x0, x0, x3_.#
 
-[#norm:NTL.S1_op]#The NTL.S1 instruction indicates that the target instruction does not
+[#norm:NTL-S1_op]#The NTL.S1 instruction indicates that the target instruction does not
 exhibit temporal locality within the capacity of the innermost level of
-shared cache in the memory hierarchy.# [#norm:NTL.S1_en]#NTL.S1 is encoded as
+shared cache in the memory hierarchy.# [#norm:NTL-S1_enc]#NTL.S1 is encoded as
 ADD _x0, x0, x4_.#
 
-[#norm:NTL.ALL_op]#The NTL.ALL instruction indicates that the target instruction does not
+[#norm:NTL-ALL_op]#The NTL.ALL instruction indicates that the target instruction does not
 exhibit temporal locality within the capacity of any level of cache in
-the memory hierarchy.# [#norm:NTL.ALL_en]#NTL.ALL is encoded as ADD _x0, x0, x5_.#
+the memory hierarchy.# [#norm:NTL-ALL_enc]#NTL.ALL is encoded as ADD _x0, x0, x5_.#
 
 [NOTE]
 ====
@@ -89,7 +89,7 @@ system should use NTL.P1 to indicate a lack of temporal locality
 exploitable by the L1, or should use NTL.ALL indicate a lack of temporal
 locality exploitable by the L2.
 
-[#norm:NTL-compressed_varients]#If the C or Zca extension is provided, compressed variants of these HINTs are
+[#norm:NTL-compressed_variants]#If the C or Zca extension is provided, compressed variants of these HINTs are
 also provided: C.NTL.P1 is encoded as C.ADD _x0, x2_; C.NTL.PALL is
 encoded as C.ADD _x0, x3_; C.NTL.S1 is encoded as C.ADD _x0, x4_; and
 C.NTL.ALL is encoded as C.ADD _x0, x5_.#
@@ -137,7 +137,7 @@ explicit cache management
 |Private L1/L2/L3; shared L4/L5  |L1 |L3 |L4 |L5 |P1 |P1 |PALL |ALL
 |===
 
-[#norm:zihintntl:NTL_Zicob_prefetch_outer]#When an NTL instruction is applied to a prefetch hint in the Zicbop
+[#norm:NTL_Zicob_prefetch_outer]#When an NTL instruction is applied to a prefetch hint in the Zicbop
 extension, it indicates that a cache line should be prefetched into a
 cache that is _outer_ from the level specified by the NTL.#
 

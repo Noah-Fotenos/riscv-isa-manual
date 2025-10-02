@@ -31,10 +31,10 @@ This extension adds this new CSR.
 RV64 systems. In RV32 only, accesses to the `stimecmp` CSR access the low 32
 bits, while accesses to the `stimecmph` CSR access the high 32 bits of `stimecmp`.#
 
-[#norm:stimecmp-stimecmph_num]#The CSR numbers for `stimecmp` / `stimecmph` are 0x14D / 0x15D (within the
+[#norm:stimecmp_stimecmph_num]#The CSR numbers for `stimecmp` / `stimecmph` are 0x14D / 0x15D (within the
 Supervisor Trap Setup block of CSRs).#
 
-[#norm:mip-sip-stip_op]#A supervisor timer interrupt becomes pending, as reflected in the STIP bit in
+[#norm:mip_sip-stip_op]#A supervisor timer interrupt becomes pending, as reflected in the STIP bit in
 the `mip` and `sip` registers whenever `time` contains a value greater than or
 equal to `stimecmp`, treating the values as unsigned integers.
 If the result of this comparison changes, it is guaranteed to be reflected in
@@ -69,7 +69,7 @@ takes advantage of stimecmp directly.)
 This extension modifies the description of the STIP/STIE bits in these
 registers as follows:
 
-[#norm:mip-stip_def]#If supervisor mode is implemented, its mip.STIP and mie.STIE are the
+[#norm:mip-stip_mie-stie_op]#If supervisor mode is implemented, its mip.STIP and mie.STIE are the
 interrupt-pending and interrupt-enable bits for supervisor-level timer
 interrupts.# [#norm:mip-stip_writable]#If the stimecmp register is not implemented, STIP is writable in
 mip, and may be written by M-mode software to deliver timer interrupts to
@@ -83,7 +83,7 @@ cleared by writing `stimecmp` with a value greater than the current time value.#
 This extension modifies the description of the STIP/STIE bits in these
 registers as follows:
 
-[#norm:sip-stip_clear]#Bits `sip`.STIP and `sie`.STIE are the interrupt-pending and interrupt-enable bits
+[#norm:sip-stip_sie-stie_clear]#Bits `sip`.STIP and `sie`.STIE are the interrupt-pending and interrupt-enable bits
 for supervisor-level timer interrupts.# [#norm:sip-stip_ro]#If implemented, STIP is read-only in
 sip,# [#norm:sip-stip_env]#and is either set and cleared by the execution environment (if `stimecmp` is
 not implemented), or reflects the timer interrupt signal resulting from
@@ -146,7 +146,7 @@ facility, while new VS-mode software takes advantage of vstimecmp directly.)
 This extension modifies the description of the VSTIP/VSTIE bits in the hip/hie
 registers as follows:
 
-[#norm:hip-hie-vstip-vstie_def]#Bits hip.VSTIP and hie.VSTIE are the interrupt-pending and interrupt-enable
+[#norm:hip-vstip_hie-vstie_def]#Bits hip.VSTIP and hie.VSTIE are the interrupt-pending and interrupt-enable
 bits for VS-level timer interrupts.# [#norm:hip-vstip_ro]#VSTIP is read-only in hip,# [#norm:hip-vstip_src]#and is the
 logical-OR of hvip.VSTIP and the timer interrupt signal resulting from
 `vstimecmp` (if `vstimecmp` is implemented).# [#norm:hip-vstip_setclear]#The `hip`.VSTIP bit, in response to
